@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: onestudio-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate
+    startCommand: npx tsx src/index.ts
+    envVars:
+      - key: PORT
+        value: 5000
