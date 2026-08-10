@@ -20,7 +20,7 @@ This file contains exactly what you should say during your interview, including 
 
 ### 📞 Core Calling Tech
 1. **1:1 Peer-to-Peer Calls:**
-   - **How it helps:** Provides the lowest possible latency (lag) because data goes directly from user to user.
+   - **How it helps:** Provides the lowest possible latency because data goes directly from user to user.
    - **Why it’s unique:** Most apps use a server for everything; I use native browser-to-browser communication.
 2. **Group SFU Meetings (mediasoup):**
    - **How it helps:** Allows 10+ people to join without crashing anyone's computer.
@@ -43,7 +43,7 @@ This file contains exactly what you should say during your interview, including 
    - **Why it’s unique:** It uses **Gemini 2.0 Flash** to analyze the *live transcript* in real-time.
 7. **AI Meeting Summaries:**
    - **How it helps:** Automatically generates a summary and action items after the call ends.
-   - **Why it’s unique:** Saves users hours of note-taking by using advanced RAG (Retrieval-Augmented Generation) concepts.
+   - **Why it’s unique:** Saves users hours of note-taking by extracting structured bullet points and assignments.
 
 ### 🎥 Proprietary Recording Engine
 8. **Local Canvas-Composite Recording:**
@@ -70,8 +70,8 @@ This file contains exactly what you should say during your interview, including 
 
 "To understand how OneStudios works under the hood, let's break it down into 4 core layers:"
 
-*   **1. The Client (Next.js & React):**
-    "Runs completely in the user's browser. It handles the UI, captures webcam/mic streams, draws video to a `<canvas>` for local recording, runs MediaPipe locally for virtual backgrounds, and uses the browser's native Speech API for captions."
+*   **1. The Client (React 19 & Vite 6):**
+    "Runs completely in the user's browser as a Single Page Application (SPA). It handles the UI, captures webcam/mic streams, draws video to a `<canvas>` for local recording, runs MediaPipe locally for virtual backgrounds, and uses the browser's native Speech API for captions."
 *   **2. The Signaling Server (Express & WebSockets):**
     "Acts as the traffic cop. WebRTC peers cannot connect without an introduction. The client connects via a secure WebSocket. The server passes connection coordinates (SDP offers, answers, and ICE candidates) between the users so they can establish a direct call."
 *   **3. The Media Engine (mediasoup SFU):**
@@ -83,7 +83,7 @@ This file contains exactly what you should say during your interview, including 
 
 ## 5️⃣ Tech Stack Used
 "To build this project, I used:
-- **Frontend:** Next.js 16 (App Router) and Tailwind CSS 4.
+- **Frontend:** React 19 (SPA with Vite 6 & React Router 7) and Tailwind CSS 4.
 - **Backend:** Express 5 and Node.js.
 - **Database:** PostgreSQL with **Prisma ORM**.
 - **Media Engine:** **mediasoup** (C++ based SFU) for group scalability."
@@ -91,7 +91,7 @@ This file contains exactly what you should say during your interview, including 
 ---
 
 ## 6️⃣ The Ending
-"In conclusion, OneStudios is a demonstrations of how we can combine WebRTC, AI, and Machine Learning to create a next-generation communication platform. Thank you for your time!"
+"In conclusion, OneStudios is a demonstration of how we can combine WebRTC, AI, and Machine Learning to create a next-generation communication platform. Thank you for your time!"
 
 ---
 
@@ -138,7 +138,7 @@ This file contains exactly what you should say during your interview, including 
 **12. Q: What are 'Multi-Stage Builds' in Docker?**
 - **Simple Answer:** "It's a trick to make the final app much smaller. We use a big image to 'build' the code, then we copy only the finished files to a tiny 'production' image. This makes the app deploy faster and use less memory."
 
-### ⚛️ Frontend (Next.js/React)
+### ⚛️ Frontend (React 19 & Vite)
 **13. Q: What is a React Hook? (e.g. useEffect, useRef)**
 - **Simple Answer:** "Hooks are special functions that let me 'hook' into React features. For example, `useEffect` is for things that happen when a page loads (like starting the camera), and `useRef` is for holding the video stream safely."
 
@@ -148,13 +148,13 @@ This file contains exactly what you should say during your interview, including 
 **15. Q: What was the absolute hardest part of this project?**
 - **Simple Answer (The 'Gold' Answer):** "The hardest part was **Re-negotiation**. When a person joins or leaves a 10-person call, every other connection has to be updated without freezing the video. I solved this by building a custom signaling queue that handles these changes step-by-step."
 
-### 🛠️ Tech Stack & Frameworks (Next.js 16, React 19, Tailwind 4, Express 5, mediasoup, Prisma)
+### 🛠️ Tech Stack & Frameworks (React 19, Vite 6, Tailwind 4, Express 5, mediasoup, Prisma)
 
-**16. Q: What is the difference between Server Components and Client Components in Next.js 16, and how does OneStudios use them?**
-- **Simple Answer:** "Server Components render on the server, keeping JavaScript bundles small and improving load speed. Client Components (using `'use client'`) run in the browser to handle interactivity and hooks. In OneStudios, static views (like the landing page) are Server Components, while call pages are Client Components because they must interact with browser camera/mic APIs."
+**16. Q: Why did you choose React 19 with Vite 6 over Server-Side Rendering (SSR) for this project?**
+- **Simple Answer:** "Video conferencing applications are heavily interactive, client-side real-time apps that rely on browser WebRTC, WebSockets, Canvas, and WebSpeech APIs. Building it as a React 19 Single Page Application with Vite 6 gives us instantaneous page load speeds, zero hydration latency, and maximum client performance."
 
 **17. Q: How does Tailwind CSS v4 differ from v3 in config, and how is it used in this project?**
-- **Simple Answer:** "Tailwind v4 uses CSS-first configuration. Instead of a `tailwind.config.js` file, we define custom design tokens and theme overrides directly in our CSS file using `@theme`. This makes it faster and fully native to standard CSS custom properties. We use it to configure our 11 customized call themes."
+- **Simple Answer:** "Tailwind v4 uses CSS-first configuration. Instead of a `tailwind.config.js` file, we define custom design tokens directly in our CSS file using `@theme`. This makes it faster and fully native to standard CSS custom properties. We use it to configure our custom themes and design tokens."
 
 **18. Q: Why use Express 5 over Express 4 for this project?**
 - **Simple Answer:** "Express 5 natively supports returning promises from route handlers. If an async controller throws an error, Express 5 automatically catches it and forwards it to error-handling middleware. We don't have to wrap controllers in `try-catch` blocks or use external libraries like `express-async-errors`."
@@ -167,4 +167,3 @@ This file contains exactly what you should say during your interview, including 
 
 **21. Q: Since Node.js is single-threaded, does media routing in mediasoup block the server?**
 - **Simple Answer:** "No. mediasoup runs C++ media workers as separate system processes. The Node.js server only handles the signaling commands (JSON over WebSockets) and controls the C++ workers using fast Unix pipes/sockets. The heavy video-routing work happens on separate CPU threads managed by the C++ engine."
-
