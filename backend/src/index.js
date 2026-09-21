@@ -39,14 +39,18 @@ const heartbeat = setInterval(() => {
 wss.on("close", () => clearInterval(heartbeat));
 
 // ─── Start Server ────────────────────────────────────────
+// Start HTTP server immediately so REST API is available
+// even if mediasoup fails to initialize (e.g. in cloud envs)
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`WebSocket heartbeat: every ${HEARTBEAT_INTERVAL / 1000}s`);
+});
+
+// Init mediasoup worker separately — failure won't crash the server
 sfuService.init().then(() => {
-  server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`WebSocket heartbeat: every ${HEARTBEAT_INTERVAL / 1000}s`);
-  });
+  console.log("[SFU] mediasoup worker initialized");
 }).catch((err) => {
-  console.error("Failed to start mediasoup worker:", err);
-  process.exit(1);
+  console.error("[SFU] Failed to start mediasoup worker — video calls unavailable:", err);
 });
 
 // ─── Graceful Shutdown ───────────────────────────────────
