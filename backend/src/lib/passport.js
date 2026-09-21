@@ -81,60 +81,62 @@ passport.use(
   )
 );
 
-passport.use(
-  new DiscordStrategy(
-    {
-      clientId: process.env.DISCORD_CLIENT_ID,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET,
-      callbackUrl: process.env.DISCORD_CALLBACK_URL,
-      scope: ["identify", "email"],
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const rawEmail = profile.email;
-        if (!rawEmail)
-          return done(new Error("Discord email missing"), false);
-        const email = rawEmail.toLowerCase().trim();
+if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+  passport.use(
+    new DiscordStrategy(
+      {
+        clientId: process.env.DISCORD_CLIENT_ID,
+        clientSecret: process.env.DISCORD_CLIENT_SECRET,
+        callbackUrl: process.env.DISCORD_CALLBACK_URL,
+        scope: ["identify", "email"],
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const rawEmail = profile.email;
+          if (!rawEmail)
+            return done(new Error("Discord email missing"), false);
+          const email = rawEmail.toLowerCase().trim();
 
-        let user = await prisma.user.findFirst({
-          where: {
-            email: {
-              equals: email,
-              mode: "insensitive",
-            },
-          },
-        });
-
-        const originalName = (profile.global_name || profile.username || email.split("@")[0] || "User").trim();
-
-        if (!user) {
-          const username = await generateUniqueUsername(originalName);
-          const avatar = profile.avatar
-            ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
-            : null;
-
-          user = await prisma.user.create({
-            data: {
-              name: originalName,
-              email,
-              username,
-              password: "oauth",
-              ...(avatar ? { avatar } : {}),
+          let user = await prisma.user.findFirst({
+            where: {
+              email: {
+                equals: email,
+                mode: "insensitive",
+              },
             },
           });
-        } else if (!user.name) {
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: { name: originalName },
-          });
+
+          const originalName = (profile.global_name || profile.username || email.split("@")[0] || "User").trim();
+
+          if (!user) {
+            const username = await generateUniqueUsername(originalName);
+            const avatar = profile.avatar
+              ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
+              : null;
+
+            user = await prisma.user.create({
+              data: {
+                name: originalName,
+                email,
+                username,
+                password: "oauth",
+                ...(avatar ? { avatar } : {}),
+              },
+            });
+          } else if (!user.name) {
+            user = await prisma.user.update({
+              where: { id: user.id },
+              data: { name: originalName },
+            });
+          }
+
+          done(null, user);
+        } catch (err) {
+          done(err, false);
         }
-
-        done(null, user);
-      } catch (err) {
-        done(err, false);
       }
-    }
-  )
-);
+    )
+  );
+}
 
 export default passport;
