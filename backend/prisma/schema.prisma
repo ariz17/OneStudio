@@ -70,6 +70,7 @@ enum MessageType {
 
 model User {
   id        String  @id @default(uuid())
+  name      String?                       // Original display name (e.g. "Mohd Arbab Rizvi")
   username  String  @unique
   email     String  @unique
   password  String

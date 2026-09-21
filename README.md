@@ -43,7 +43,7 @@
 
 ## 🌟 Overview
 
-**OneStudios** is a full-featured, real-time video conferencing platform designed and built entirely from the ground up—no third-party Video SDKs like Twilio or Agora. It leverages **native WebRTC** for peer-to-peer 1:1 calls and **mediasoup SFU** for scalable group calls, orchestrated through a custom Node.js Express & WebSocket signaling server.
+**OneStudios** is a full-featured, real-time video conferencing platform designed and built entirely from the scratch without any third-party Video SDKs like Twilio or Agora. It leverages **native WebRTC** for peer-to-peer 1:1 calls and **mediasoup SFU** for scalable group calls, orchestrated through a custom Node.js Express & WebSocket signaling server.
 
 The frontend is a lightweight, ultra-fast **React 19 Single Page Application (SPA)** powered by **Vite 6** and **React Router 7**.
 

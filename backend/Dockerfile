@@ -23,18 +23,17 @@ RUN npm ci
 COPY prisma ./prisma/
 RUN npx prisma generate
 
-# Copy source code and build
+# Copy source code
 COPY . .
-RUN npx tsc
 
 # ── Stage 2: Production ──
 FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
-# Copy only production dependencies + built output
+# Copy only production dependencies + source output
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src ./src
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./
 
@@ -48,4 +47,4 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD node -e "fetch('http://localhost:5000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "src/index.js"]
