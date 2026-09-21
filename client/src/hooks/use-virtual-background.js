@@ -115,6 +115,12 @@ export function useVirtualBackground(sourceTrack) {
         return () => {
             isComponentMounted = false;
             if (segmentationRef.current) segmentationRef.current.close();
+            if (videoRef.current) {
+                try {
+                    videoRef.current.pause();
+                    videoRef.current.srcObject = null;
+                } catch { }
+            }
         };
     }, []);
 
@@ -196,6 +202,12 @@ export function useVirtualBackground(sourceTrack) {
         return () => {
             stopped = true;
             cancelAnimationFrame(rafIdRef.current);
+            if (videoRef.current) {
+                try {
+                    videoRef.current.pause();
+                    videoRef.current.srcObject = null;
+                } catch { }
+            }
         };
     }, [sourceTrack, backgroundMode]);
 

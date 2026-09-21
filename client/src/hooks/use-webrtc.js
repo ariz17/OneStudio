@@ -409,8 +409,21 @@ export function useWebRTC(roomId) {
 
         init();
 
+        const handleBeforeUnload = () => {
+            if (cameraTrackRef.current) {
+                try { cameraTrackRef.current.stop(); } catch { }
+            }
+            localStreamRef.current?.getTracks().forEach((t) => {
+                try { t.stop(); } catch { }
+            });
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("pagehide", handleBeforeUnload);
+
         return () => {
             cleanedUpRef.current = true;
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("pagehide", handleBeforeUnload);
             if (socket && socket.readyState <= WebSocket.OPEN) {
                 socket.close(1000, "cleanup");
             }
@@ -418,6 +431,10 @@ export function useWebRTC(roomId) {
             if (pc) {
                 pc.close();
                 pcRef.current = null;
+            }
+            if (cameraTrackRef.current) {
+                try { cameraTrackRef.current.stop(); } catch { }
+                cameraTrackRef.current = null;
             }
             if (stream) {
                 stream.getTracks().forEach((t) => t.stop());
@@ -483,10 +500,21 @@ export function useWebRTC(roomId) {
     };
 
     const endCall = () => {
+        if (cameraTrackRef.current) {
+            try { cameraTrackRef.current.stop(); } catch { }
+            cameraTrackRef.current = null;
+        }
+        if (rawVideoTrack) {
+            try { rawVideoTrack.stop(); } catch { }
+        }
+        if (processedTrack) {
+            try { processedTrack.stop(); } catch { }
+        }
         screenTrackRef.current?.stop();
         socketRef.current?.close();
         pcRef.current?.close();
         localStreamRef.current?.getTracks().forEach((t) => t.stop());
+        localStreamRef.current = null;
         window.location.href = "/";
     };
 

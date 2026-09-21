@@ -43,6 +43,7 @@ export function useGroupWebRTC(roomId) {
     const sendTransportRef = useRef(null);
     const recvTransportRef = useRef(null);
     const localStreamRef = useRef(null);
+    const cameraTrackRef = useRef(null);
     const videoProducerRef = useRef(null);
     const audioProducerRef = useRef(null);
     const screenProducerRef = useRef(null);
@@ -287,6 +288,7 @@ export function useGroupWebRTC(roomId) {
 
                 localStreamRef.current = stream;
                 const vidTrack = stream.getVideoTracks()[0] || null;
+                cameraTrackRef.current = vidTrack;
                 setRawVideoTrack(vidTrack);
                 setLocalStream(stream);
 
@@ -448,8 +450,21 @@ export function useGroupWebRTC(roomId) {
 
         init();
 
+        const handleBeforeUnload = () => {
+            if (cameraTrackRef.current) {
+                try { cameraTrackRef.current.stop(); } catch { }
+            }
+            localStreamRef.current?.getTracks().forEach((t) => {
+                try { t.stop(); } catch { }
+            });
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("pagehide", handleBeforeUnload);
+
         return () => {
             cleanedUpRef.current = true;
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("pagehide", handleBeforeUnload);
             for (const { consumer } of consumersRef.current.values()) consumer.close();
             consumersRef.current.clear();
             screenProducerRef.current?.close();
@@ -461,7 +476,13 @@ export function useGroupWebRTC(roomId) {
             recvTransportRef.current?.close();
             if (socket && socket.readyState <= WebSocket.OPEN) socket.close(1000, "cleanup");
             socketRef.current = null;
-            localStreamRef.current?.getTracks().forEach((t) => t.stop());
+            if (cameraTrackRef.current) {
+                try { cameraTrackRef.current.stop(); } catch { }
+                cameraTrackRef.current = null;
+            }
+            localStreamRef.current?.getTracks().forEach((t) => {
+                try { t.stop(); } catch { }
+            });
             localStreamRef.current = null;
         };
     }, [roomId, send]);
@@ -517,15 +538,28 @@ export function useGroupWebRTC(roomId) {
     }, [rawVideoTrack, send]);
 
     const endCall = useCallback(() => {
+        if (cameraTrackRef.current) {
+            try { cameraTrackRef.current.stop(); } catch { }
+            cameraTrackRef.current = null;
+        }
+        if (rawVideoTrack) {
+            try { rawVideoTrack.stop(); } catch { }
+        }
+        if (processedTrack) {
+            try { processedTrack.stop(); } catch { }
+        }
+        localStreamRef.current?.getTracks().forEach((t) => {
+            try { t.stop(); } catch { }
+        });
+        localStreamRef.current = null;
         screenProducerRef.current?.close();
         videoProducerRef.current?.close();
         audioProducerRef.current?.close();
         sendTransportRef.current?.close();
         recvTransportRef.current?.close();
         socketRef.current?.close();
-        localStreamRef.current?.getTracks().forEach((t) => t.stop());
         window.location.href = "/";
-    }, []);
+    }, [rawVideoTrack, processedTrack]);
 
     const toggleScreenShare = useCallback(async () => {
         const sendTransport = sendTransportRef.current;
